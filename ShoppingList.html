@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shopping List</title>
+    <style>
+      /* --- Base and Shared Styles --- */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background: linear-gradient(120deg, #fffbe6 0%, #ffe0b2 100%);
+        min-height: 100vh;
+        overflow-x: hidden;
+        color: #333;
+        text-align: center;
+      }
+      
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      @keyframes fadeUp {
+        0% {
+          transform: translateY(40px);
+          opacity: 0;
+        }
+        100% {
+          transform: translateY(0px);
+          opacity: 1;
+        }
+      }
+
+      /* --- Header and Navigation (FROM RECIPES.HTML) --- */
+      header {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        position: relative;
+        /* padding-top: 1rem; */
+        height: 80px;
+        margin-bottom: 2rem;
+      }
+
+      header nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 95%;
+        max-width: 1400px;
+        border-radius: 30px;
+        padding: 0.5rem 2rem;
+        backdrop-filter: blur(25px) saturate(200%);
+        background: rgba(255, 255, 255, 0.37);
+        box-shadow: 0 4px 24px 0 rgba(255, 217, 0, 0.1);
+        gap: 20px;
+        position: fixed;
+        /* top: 1rem; */
+        z-index: 1000;
+        transition: top 0.3s, opacity 0.3s;
+        animation: fadeUp 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+        opacity: 0;
+      }
+      nav.navbar-hidden {
+        top: -100px;
+        opacity: 0;
+      }
+      header nav #navlogo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      header nav #navlogo img {
+        width: 54px;
+        filter: drop-shadow(0 2px 8px #ffd90055);
+        transition: transform 0.2s;
+      }
+      header nav #navlogo img:hover {
+        transform: scale(1.08) rotate(-6deg);
+      }
+      header nav .nav-links {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        gap: 28px;
+        padding: 0;
+      }
+      header nav .nav-links a {
+       text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 0.5rem 1.1rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px 0 rgba(255, 217, 0, 0.04);
+      }
+      header nav .nav-links a img {
+        width: 28px;
+      }
+      header nav .nav-links a span {
+        font-size: 1.1rem;
+        color: #333;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      header nav .nav-links a:hover,
+      header nav .nav-links a.active {
+        background: #ffb300;
+        box-shadow: 0 4px 16px 0 rgba(255, 217, 0, 0.13);
+      }
+      header nav .nav-links a:hover span,
+      header nav .nav-links a.active span {
+        color: #fff;
+      }
+      header nav .nav-search-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: relative;
+        margin: 0 18px;
+        background: #fffbe6;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px 0 rgba(255, 217, 0, 0.08);
+        padding: 0.2rem 0.7rem 0.2rem 2.2rem;
+        transition: box-shadow 0.2s;
+      }
+      header nav .nav-search-container .search-icon {
+        width: 20px;
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0.7;
+      }
+      header nav .nav-search-container input {
+        height: 38px;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 1rem;
+        color: #444;
+        width: 160px;
+        padding-left: 0.5rem;
+        transition: width 0.3s;
+      }
+      header nav .nav-search-container input:focus {
+        width: 240px;
+        background: #fffde4;
+      }
+      #searchResults {
+        position: absolute;
+        top: 48px;
+        left: 0;
+        width: 100%;
+        background: #fffbe6;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px #ffd90033;
+        z-index: 1001;
+        display: none;
+        text-align: left;
+      }
+      header nav .user-profile-link a {
+        background: none;
+        box-shadow: none;
+        padding: 0.2rem;
+      }
+      header nav .user-profile-link a img {
+        width: 36px;
+        border-radius: 50%;
+        border: 2px solid #ffd90055;
+        transition: box-shadow 0.2s;
+      }
+      header nav .user-profile-link a img:hover {
+        box-shadow: 0 2px 12px 0 #ffd90055;
+      }
+      .hamburger-menu {
+        display: none;
+        cursor: pointer;
+        z-index: 101;
+      }
+      .hamburger-menu div {
+        width: 25px;
+        height: 3px;
+        background-color: #333;
+        margin: 5px 0;
+        transition: all 0.3s;
+      }
+
+      /* --- SHOPPING LIST SPECIFIC STYLES --- */
+      .container {
+        max-width: 600px;
+        margin: auto;
+        padding: 0 15px;
+      }
+
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 5px;
+      }
+
+      .subtitle {
+        margin-bottom: 30px;
+        color: #666;
+        font-size: 0.95rem;
+      }
+
+      .card {
+        background: #fff;
+        padding: 25px;
+        border-radius: 16px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+        text-align: left;
+      }
+
+      .full-input {
+        width: 100%;
+        margin: 10px 0 20px;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+
+      #doneBtn {
+        display: inline-block;
+        margin-left: 10px;
+        padding: 2px 10px;
+        background-color: #89fe04;
+        color: rgb(0, 0, 0);
+        font-size: 12px; 
+        font-weight: bold;
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+      }
+
+      #doneBtn.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      .progress-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+      }
+      .progress-bar {
+        flex: 1;
+        height: 8px;
+        background: #eee;
+        border-radius: 5px;
+        margin-right: 10px;
+        overflow: hidden;
+      }
+      #progressFill {
+        height: 100%;
+        background: linear-gradient(to right, orange, red);
+        width: 0%;
+        transition: width 0.4s ease;
+      }
+
+      #ingredientList {
+        margin-bottom: 20px;
+      }
+      .ingredient {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+      .ingredient input,
+      .ingredient select {
+        padding: 5px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+      }
+      .ingredient .name {
+        flex: 2;
+        min-width: 120px;
+      }
+      .ingredient .qty {
+        width: 60px;
+      }
+      .ingredient .unit {
+        width: 100px;
+      }
+      .ingredient .cost {
+        width: 80px;
+      }
+      .ingredient button {
+        background: #ff4d4f;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .add-btn {
+        width: 100%;
+        padding: 10px;
+        background: #ffe5d0;
+        border: 2px dashed #ff914d;
+        color: #e65c00;
+        font-weight: bold;
+        border-radius: 10px;
+        cursor: pointer;
+        margin-bottom: 20px;
+      }
+
+      .summary {
+        background: linear-gradient(to right, #fff7e6, #ffe9ec);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        color: #333;
+        font-weight: bold;
+      }
+
+      .save-btn {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .save-btn:hover {
+        background-color: #218838;
+      }
+
+      .saved-list {
+        margin-top: 25px;
+        padding: 15px;
+        background-color: #fff8f0;
+        border: 1px solid #ffd6b0;
+        border-radius: 10px;
+      }
+      .saved-list h4 {
+        margin-bottom: 10px;
+        color: #e65c00;
+      }
+      .saved-list ul {
+        list-style: none;
+        padding-left: 0;
+      }
+      .saved-list li {
+        margin-bottom: 5px;
+        font-size: 14px;
+      }
+      .saved-block {
+          margin-bottom: 1rem;
+          padding-bottom: 1rem;
+          border-bottom: 1px solid #ffd6b0;
+      }
+      .saved-block:last-child {
+          border-bottom: none;
+      }
+
+      .saved-actions {
+        margin-top: 10px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+      .saved-actions button {
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+      }
+      .edit-btn {
+        background-color: #ffc107;
+        color: #000;
+      }
+      .clear-btn {
+        background-color: #dc3545;
+        color: white;
+      }
+      
+      /* --- Responsive Design --- */
+      @media (max-width: 991px) {
+        .hamburger-menu {
+          display: block;
+        }
+        header nav {
+            width: 90%;
+            padding: 0.5rem 1.5rem;
+        }
+        header nav .nav-links {
+          display: none;
+                position: absolute;
+                top: 70px;
+                left: 0;
+                width: 100%;
+                flex-direction: column;
+                background: rgba(240, 240, 240, 0.98);
+                backdrop-filter: blur(10px);
+                padding: 1rem 0;
+                border-radius: 0 0 20px 20px;
+                box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        header nav .nav-links.active {
+          display: flex;
+        }
+        header nav .nav-links li {
+          width: 90%;
+          text-align: center;
+        }
+        header nav .nav-search-container {
+            order: -1; /* Move search to the top on mobile nav */
+        }
+        header nav .nav-links a,
+        header nav .nav-search-container {
+          margin: 0.5rem auto;
+          width: 90%;
+          justify-content: center;
+        }
+        header nav .nav-search-container input:focus {
+          width: 100%;
+        }
+      }
+       @media (max-width: 480px) {
+        header nav { padding: 0.5rem 1rem; }
+        header nav #navlogo img { width: 45px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div id="navlogo">
+          <a href="index.html"><img src="./assets/recipe-book.png" alt="Logo"/></a>
+        </div>
+        <ul class="nav-links">
+          <li>
+            <a href="index.html">
+              <img src="assets/cooking.png" alt="Home" />
+              <span>Home</span>
+            </a>
+          </li>
+          <li>
+            <a href="./Recipes.html">
+              <img src="./assets/book.png" alt="Recipes" />
+              <span>Recipes</span>
+            </a>
+          </li>
+          <li class="nav-search-container">
+            <img src="./assets/search.png" alt="Search" class="search-icon" />
+            <input type="text" id="homeSearchInput" placeholder="Search recipes..."/>
+            <div id="searchResults"></div>
+          </li>
+          <li>
+            <a href="MealPlanner.html">
+              <img src="./assets/diary.png" alt="Meal Planner" />
+              <span>MealPlanner</span>
+            </a>
+          </li>
+          <li>
+            <a href="ShoppingList.html" class="active">
+              <img src="./assets/shopping-cart.png" alt="Shopping List" />
+              <span>Shopping</span>
+            </a>
+          </li>
+        </ul>
+        <div class="user-profile-link">
+          <a href="Profile.html">
+            <img src="./assets/user.png" alt="Profile" />
+          </a>
+        </div>
+        <div class="hamburger-menu">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </nav>
+    </header>
+
+    <div class="container">
+      <h1>Shopping List</h1>
+      <p class="subtitle">Plan your ingredients and calculate costs</p>
+
+      <div class="card">
+        <div class="progress-section">
+          <div class="progress-bar">
+            <div id="progressFill"></div>
+          </div>
+          <button id="doneBtn" class="disabled">✅ Done</button>
+        </div>
+
+        <label for="recipeTitle">📋 Recipe Title</label>
+        <input
+          type="text"
+          id="recipeTitle"
+          placeholder="Enter your recipe title"
+          class="full-input"
+        />
+
+        <label for="maxItems">🧾 How many ingredients?</label>
+        <input
+          type="number"
+          id="maxItems"
+          min="1"
+          placeholder="e.g., 5"
+          class="full-input"
+        />
+
+        <h3 style="margin-top: 25px; margin-bottom: 10px">Ingredients</h3>
+        <div id="ingredientList"></div>
+        <button class="add-btn" onclick="addIngredient()">
+          + Add Ingredient
+        </button>
+
+        <div class="summary">
+          <p>💰 Total Cost:</p>
+          <span id="totalCost">₹0.00</span>
+        </div>
+
+        <button class="save-btn" id="saveBtn">💾 Save Shopping List</button>
+      </div>
+
+      <div id="savedList" class="saved-list"></div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        // --- Navbar Logic from Recipes.html ---
+        const hamburger = document.querySelector(".hamburger-menu");
+        const navLinks = document.querySelector(".nav-links");
+        if (hamburger && navLinks) {
+          hamburger.addEventListener("click", () => {
+            navLinks.classList.toggle("active");
+          });
+        }
+        let nav = document.querySelector("nav");
+        if (nav) {
+          let lastScrollY = window.scrollY;
+          window.addEventListener("scroll", () => {
+            if (lastScrollY < window.scrollY && window.scrollY > 100) {
+              nav.classList.add("navbar-hidden");
+            } else {
+              nav.classList.remove("navbar-hidden");
+            }
+            lastScrollY = window.scrollY;
+          });
+        }
+        const searchInput = document.getElementById("homeSearchInput");
+        const resultsDiv = document.getElementById("searchResults");
+        if (searchInput && resultsDiv) {
+            searchInput.addEventListener("input", function () {
+                const query = this.value.trim().toLowerCase();
+                if (!query) {
+                    resultsDiv.style.display = "none";
+                    return;
+                }
+                let recipes = [];
+                try {
+                    recipes = JSON.parse(localStorage.getItem("recipes") || "[]");
+                } catch (e) {
+                    recipes = [];
+                }
+                const matches = recipes.filter(r => r.title.toLowerCase().includes(query));
+                resultsDiv.innerHTML = "";
+                if (matches.length > 0) {
+                    matches.forEach(r => {
+                        const div = document.createElement("div");
+                        div.textContent = r.title;
+                        div.style.padding = "10px";
+                        div.style.cursor = "pointer";
+                        div.onclick = () => {
+                            // Redirect to Recipes.html and let it handle the view
+                            window.location.href = `Recipes.html?view=${encodeURIComponent(r.title)}`;
+                        };
+                        resultsDiv.appendChild(div);
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<div style="padding:10px; color:#888;">No matches found</div>';
+                }
+                resultsDiv.style.display = "block";
+            });
+            document.addEventListener("click", function (e) {
+                if (resultsDiv && !e.target.closest('.nav-search-container')) {
+                    resultsDiv.style.display = "none";
+                }
+            });
+        }
+
+
+        // --- Shopping List Logic ---
+        let currentItems = 0;
+
+        function updateProgress() {
+            const max = parseInt(document.getElementById("maxItems").value || 0);
+            const progressFill = document.getElementById("progressFill");
+            const doneBtn = document.getElementById("doneBtn");
+
+            if (!max || max <= 0) {
+                progressFill.style.width = "0%";
+                doneBtn.classList.add("disabled");
+                return;
+            }
+
+            const progress = Math.min((currentItems / max) * 100, 100);
+            progressFill.style.width = progress + "%";
+            doneBtn.classList.toggle("disabled", progress < 100);
+        }
+
+        window.addIngredient = function() {
+            const max = parseInt(document.getElementById("maxItems").value || 0);
+            if (max > 0 && currentItems >= max) {
+                alert("You've reached your planned items.");
+                return;
+            }
+
+            const list = document.getElementById("ingredientList");
+            const div = document.createElement("div");
+            div.className = "ingredient";
+            div.innerHTML = `
+                <input type="text" placeholder="e.g., Tomatoes" class="name" />
+                <input type="number" class="qty" placeholder="Qty" />
+                <select class="unit">
+                <option value="">Unit</option>
+                <option>kilogram</option><option>gram</option><option>liter</option>
+                <option>milliliter</option><option>teaspoon</option>
+                <option>tablespoon</option><option>cups</option><option>pieces</option>
+                <option>pinch</option><option>slice</option><option>bottle</option>
+                <option>packet</option><option>can</option><option>clove</option>
+                <option>ounce</option><option>pound</option>
+                </select>
+                <input type="number" class="cost" placeholder="₹ Cost" />
+                <button onclick="removeIngredient(this)">−</button>
+            `;
+            list.appendChild(div);
+            currentItems++;
+            updateProgress();
+            updateCosts();
+        }
+
+        window.removeIngredient = function(btn) {
+            btn.parentElement.remove();
+            currentItems--;
+            updateProgress();
+            updateCosts();
+        }
+
+        function updateCosts() {
+            const costs = document.querySelectorAll(".cost");
+            let total = 0;
+            costs.forEach((input) => {
+                const val = parseFloat(input.value);
+                if (!isNaN(val)) total += val;
+            });
+            document.getElementById("totalCost").innerText = "₹" + total.toFixed(2);
+        }
+
+        document.body.addEventListener("input", function(event) {
+            if (event.target.classList.contains('cost') || event.target.id === 'maxItems') {
+                updateCosts();
+                updateProgress();
+            }
+        });
+        
+        document.getElementById("saveBtn").addEventListener("click", () => {
+            const title = document.getElementById("recipeTitle").value.trim();
+            if (!title) return alert("Please enter a recipe title.");
+
+            const ingredients = [];
+            document.querySelectorAll(".ingredient").forEach((div) => {
+                const name = div.querySelector(".name").value;
+                const qty = div.querySelector(".qty").value;
+                const unit = div.querySelector(".unit").value;
+                const cost = div.querySelector(".cost").value;
+                if (name && qty && unit && cost) {
+                ingredients.push({ name, qty, unit, cost });
+                }
+            });
+
+            if (ingredients.length > 0) {
+                 saveListToStorage({ title, ingredients });
+                 renderSavedLists();
+                 alert("Shopping list saved successfully!");
+                 // Clear current form
+                 document.getElementById("recipeTitle").value = "";
+                 document.getElementById("maxItems").value = "";
+                 document.getElementById("ingredientList").innerHTML = "";
+                 currentItems = 0;
+                 updateProgress();
+                 updateCosts();
+
+            } else {
+                alert("Please add at least one ingredient.");
+            }
+        });
+        
+        function getSavedLists() {
+            return JSON.parse(localStorage.getItem("shoppingLists") || "[]");
+        }
+
+        function saveListToStorage(newList) {
+            const lists = getSavedLists();
+            lists.push(newList);
+            localStorage.setItem("shoppingLists", JSON.stringify(lists));
+        }
+        
+        function updateSavedLists(lists) {
+            localStorage.setItem("shoppingLists", JSON.stringify(lists));
+            renderSavedLists();
+        }
+
+        function renderSavedLists() {
+            const savedListContainer = document.getElementById("savedList");
+            savedListContainer.innerHTML = "";
+            const lists = getSavedLists();
+            
+            lists.forEach((list, index) => {
+                let total = list.ingredients.reduce((sum, i) => sum + parseFloat(i.cost), 0);
+                const div = document.createElement("div");
+                div.className = "saved-block";
+                let html = `<h4>${list.title}</h4><ul>`;
+                list.ingredients.forEach((i) => {
+                    html += `<li>• ${i.name} — ${i.qty} ${i.unit} — ₹${parseFloat(i.cost).toFixed(2)}</li>`;
+                });
+                html += `</ul>
+                <p><strong>Total: ₹${total.toFixed(2)}</strong></p>
+                <div class="saved-actions">
+                    <button class="edit-btn" data-index="${index}">✏️ Edit</button>
+                    <button class="clear-btn" data-index="${index}">🗑️ Clear</button>
+                </div>
+                `;
+                div.innerHTML = html;
+                savedListContainer.appendChild(div);
+            });
+        }
+        
+        document.getElementById("savedList").addEventListener("click", function(e){
+            const index = e.target.dataset.index;
+            if (index === undefined) return;
+
+            let lists = getSavedLists();
+            const listToEdit = lists[index];
+
+            if (e.target.classList.contains("edit-btn")) {
+                document.getElementById("recipeTitle").value = listToEdit.title;
+                document.getElementById("maxItems").value = listToEdit.ingredients.length;
+                
+                const ingredientListContainer = document.getElementById("ingredientList");
+                ingredientListContainer.innerHTML = "";
+                currentItems = 0;
+                listToEdit.ingredients.forEach(i => {
+                    const div = document.createElement("div");
+                    div.className = "ingredient";
+                    div.innerHTML = `
+                        <input type="text" value="${i.name}" class="name" />
+                        <input type="number" value="${i.qty}" class="qty" />
+                        <select class="unit"><option selected>${i.unit}</option></select>
+                        <input type="number" value="${i.cost}" class="cost" />
+                        <button onclick="removeIngredient(this)">−</button>
+                    `;
+                    ingredientListContainer.appendChild(div);
+                    currentItems++;
+                });
+                lists.splice(index, 1); // Remove from saved lists to be re-saved on edit
+                updateSavedLists(lists);
+                updateProgress();
+                updateCosts();
+
+            } else if (e.target.classList.contains("clear-btn")) {
+                if(confirm("Are you sure you want to delete this list?")) {
+                    lists.splice(index, 1);
+                    updateSavedLists(lists);
+                }
+            }
+        });
+
+
+        // Initial Render
+        updateProgress();
+        updateCosts();
+        renderSavedLists();
+      });
+    </script>
+  </body>
+</html>

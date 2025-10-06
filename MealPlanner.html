@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meal Planner | TasteMate</title>
+    <style>
+      /* --- Base and Shared Styles --- */
+      :root {
+        --primary-color: #ffb300;
+        --secondary-color: #ff6b00;
+        --background-color: #fff8ee;
+        --card-bg-color: #ffffff;
+        --text-color: #333;
+        --border-radius: 12px;
+        --shadow: 0 4px 16px 0 rgba(255, 217, 0, 0.13);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+      }
+      html { scroll-behavior: smooth; }
+      body { background: var(--background-color); color: var(--text-color); }
+      img { max-width: 100%; height: auto; display: block; }
+
+      @keyframes fadeUp {
+        from { transform: translateY(40px); opacity: 0; }
+        to { transform: translateY(0px); opacity: 1; }
+      }
+
+      /* --- Header and Navigation --- */
+      header {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        position: relative;
+        /* padding-top: 1rem; */
+        height: 80px;
+        margin-bottom: 2rem;
+      }
+      header nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 95%;
+        max-width: 1400px;
+        border-radius: 30px;
+        padding: 0.5rem 2rem;
+        backdrop-filter: blur(25px) saturate(200%);
+        background: rgba(255, 255, 255, 0.37);
+        box-shadow: 0 4px 24px 0 rgba(255, 217, 0, 0.1);
+        gap: 20px;
+        position: fixed;
+        /* top: 1rem; */
+        z-index: 1000;
+        transition: top 0.3s, opacity 0.3s;
+        animation: fadeUp 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+        opacity: 0;
+      }
+      nav.navbar-hidden { top: -100px; opacity: 0; }
+      header nav #navlogo img { width: 54px; filter: drop-shadow(0 2px 8px #ffd90055); transition: transform 0.2s; }
+      header nav #navlogo img:hover { transform: scale(1.08) rotate(-6deg); }
+      header nav .nav-links { display: flex; align-items: center; list-style: none; gap: 28px; padding: 0; }
+      header nav .nav-links a { text-decoration: none; display: flex; align-items: center; gap: 7px; padding: 0.5rem 1.1rem; border-radius: var(--border-radius); font-size: 1.1rem; color: var(--text-color); font-weight: 500; transition: background 0.2s, color 0.2s, box-shadow 0.2s; box-shadow: 0 2px 8px 0 rgba(255, 217, 0, 0.04); }
+      header nav .nav-links a img { width: 28px; }
+      header nav .nav-links a span { font-size: 1.1rem; color: var(--text-color); font-weight: 600; letter-spacing: 0.5px; }
+      header nav .nav-links a:hover, header nav .nav-links a.active { background: var(--primary-color); box-shadow: var(--shadow); }
+      header nav .nav-links a:hover span, header nav .nav-links a.active span { color: #fff; }
+      header nav .nav-search-container { display: flex; align-items: center; gap: 10px; position: relative; margin: 0 18px; background: #fffbe6; border-radius: var(--border-radius); box-shadow: 0 2px 8px 0 rgba(255, 217, 0, 0.08); padding: 0.2rem 0.7rem 0.2rem 2.2rem; transition: box-shadow 0.2s; }
+      header nav .nav-search-container .search-icon { width: 20px; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.7; }
+      header nav .nav-search-container input { height: 38px; border-radius: 10px; border: none; outline: none; background: transparent; font-size: 1rem; color: #444; width: 160px; padding-left: 0.5rem; transition: width 0.3s; }
+      header nav .nav-search-container input:focus { width: 240px; background: #fffde4; }
+      #searchResults { position: absolute; top: 48px; left: 0; width: 100%; background: #fffbe6; border-radius: 10px; box-shadow: 0 2px 8px #ffd90033; z-index: 1001; display: none; text-align: left; }
+      header nav .user-profile-link a { background: none; box-shadow: none; padding: 0.2rem; border-radius: 50%; }
+      header nav .user-profile-link a.active { background: var(--primary-color); }
+      header nav .user-profile-link a img { width: 36px; border-radius: 50%; border: 2px solid #ffd90055; transition: box-shadow 0.2s; }
+      header nav .user-profile-link a img:hover { box-shadow: 0 2px 12px 0 #ffd90055; }
+      .hamburger-menu { display: none; cursor: pointer; z-index: 101; }
+      .hamburger-menu div { width: 25px; height: 3px; background-color: var(--text-color); margin: 5px 0; transition: all 0.3s; }
+      
+      /* --- Main Content --- */
+      main {
+        padding: 20px;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+      .planner-header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .planner-header h1 {
+        font-size: clamp(2rem, 5vw, 3rem);
+        color: var(--secondary-color);
+      }
+      .planner-header p {
+        font-size: 1.1rem;
+        color: #555;
+      }
+       .planner-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+      }
+      .planner-actions button {
+        background: var(--secondary-color);
+        border: none;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s ease;
+      }
+       .planner-actions button:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+      }
+       .planner-actions button#autoPlanBtn {
+        background-color: #28a745;
+      }
+
+      .meal-planner-container {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 2rem;
+        align-items: start;
+      }
+      
+      /* Recipe Pool */
+      .recipe-pool {
+        background: var(--card-bg-color);
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        height: 80vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .recipe-pool h3 {
+        text-align: center;
+        margin-bottom: 1rem;
+        color: var(--secondary-color);
+      }
+      #recipe-list {
+        overflow-y: auto;
+        flex-grow: 1;
+        padding-right: 10px;
+      }
+      #recipe-list::-webkit-scrollbar { width: 5px; }
+      #recipe-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 5px; }
+
+      .draggable-recipe {
+        background: #fffaf0;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        border: 1px solid #ffe8c5;
+        cursor: grab;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: box-shadow 0.2s;
+      }
+      .draggable-recipe:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+      .draggable-recipe.dragging {
+        opacity: 0.5;
+        background: #ffe8c5;
+      }
+      .draggable-recipe img {
+        width: 50px;
+        height: 50px;
+        border-radius: 6px;
+        object-fit: cover;
+      }
+      .draggable-recipe h5 {
+        font-size: 0.9rem;
+        margin: 0;
+      }
+
+      /* Weekly Plan */
+      .weekly-plan {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 10px;
+      }
+      .day-column {
+        background: var(--card-bg-color);
+        padding: 10px;
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .day-column h4 {
+        text-align: center;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+      .meal-slot {
+        background: #f9f9f9;
+        border: 2px dashed #ddd;
+        border-radius: 8px;
+        min-height: 100px;
+        padding: 5px;
+        transition: background-color 0.2s;
+      }
+      .meal-slot h5 {
+        font-size: 0.8rem;
+        color: #888;
+        margin-bottom: 5px;
+      }
+      .meal-slot.drag-over {
+        background-color: #e0f7fa;
+        border-color: #00bcd4;
+      }
+      
+      .meal-card {
+        background: #fff;
+        border: 1px solid #eee;
+        padding: 5px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        position: relative;
+      }
+      .meal-card button.remove-meal {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        width: 18px;
+        height: 18px;
+        border: none;
+        background: #ffcccb;
+        color: #d32f2f;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 18px;
+        padding: 0;
+        text-align: center;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 1200px) {
+        .meal-planner-container {
+          grid-template-columns: 250px 1fr;
+        }
+      }
+      @media (max-width: 991px) {
+        .hamburger-menu { display: block; }
+        header nav { width: 90%; padding: 0.5rem 1.5rem; }
+        header nav .nav-links { display: none; position: absolute; top: 70px; left: 0; width: 100%; flex-direction: column; background: rgba(240, 240, 240, 0.98); backdrop-filter: blur(10px); padding: 1rem 0; border-radius: 0 0 20px 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        header nav .nav-links.active { display: flex; }
+        header nav .nav-links li { width: 90%; text-align: center; }
+        header nav .nav-search-container { order: -1; }
+        header nav .nav-links a, header nav .nav-search-container { margin: 0.5rem auto; width: 90%; justify-content: center; }
+        header nav .nav-search-container input:focus { width: 100%; }
+
+        .meal-planner-container {
+          grid-template-columns: 1fr;
+        }
+        .recipe-pool {
+            height: auto;
+            max-height: 40vh;
+        }
+        .weekly-plan {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+      }
+      @media (max-width: 480px) {
+        header nav { padding: 0.5rem 1rem; }
+        header nav #navlogo img { width: 45px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div id="navlogo">
+          <a href="index.html"><img src="./assets/recipe-book.png" alt="Logo"/></a>
+        </div>
+        <ul class="nav-links">
+          <li>
+            <a href="index.html">
+              <img src="./assets/cooking.png" alt="Home" />
+              <span>Home</span>
+            </a>
+          </li>
+          <li>
+            <a href="Recipes.html">
+              <img src="./assets/book.png" alt="Recipes" />
+              <span>Recipes</span>
+            </a>
+          </li>
+          <li class="nav-search-container">
+            <img src="./assets/search.png" alt="Search" class="search-icon" />
+            <input type="text" id="homeSearchInput" placeholder="Search recipes..."/>
+            <div id="searchResults"></div>
+          </li>
+          <li>
+            <a href="MealPlanner.html" class="active">
+              <img src="./assets/diary.png" alt="Meal Planner" />
+              <span>MealPlanner</span>
+            </a>
+          </li>
+          <li>
+            <a href="ShoppingList.html">
+              <img src="./assets/shopping-cart.png" alt="Shopping List" />
+              <span>Shopping</span>
+            </a>
+          </li>
+        </ul>
+        <div class="user-profile-link">
+          <a href="Profile.html">
+            <img src="./assets/user.png" alt="Profile" />
+          </a>
+        </div>
+        <div class="hamburger-menu">
+          <div></div><div></div><div></div>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <div class="planner-header">
+        <h1>Weekly Meal Planner</h1>
+        <p>Drag recipes to the calendar or use the Auto-Plan button for a quick start.</p>
+      </div>
+      <div class="planner-actions">
+        <button id="autoPlanBtn">Auto-Plan Week</button>
+        <button id="clearPlanBtn">Clear Entire Plan</button>
+      </div>
+      <div class="meal-planner-container">
+        <div class="recipe-pool">
+          <h3>Available Recipes</h3>
+          <div id="recipe-list">
+             <!-- Draggable recipes will be injected here -->
+          </div>
+        </div>
+        <div id="weekly-plan" class="weekly-plan">
+          <!-- Calendar will be injected here -->
+        </div>
+      </div>
+    </main>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        // --- Navbar Logic ---
+        const hamburger = document.querySelector(".hamburger-menu");
+        const navLinks = document.querySelector(".nav-links");
+        hamburger.addEventListener("click", () => navLinks.classList.toggle("active"));
+
+        let nav = document.querySelector("nav");
+        let lastScrollY = window.scrollY;
+        window.addEventListener("scroll", () => {
+            if (lastScrollY < window.scrollY && window.scrollY > 100) {
+              nav.classList.add("navbar-hidden");
+            } else {
+              nav.classList.remove("navbar-hidden");
+            }
+            lastScrollY = window.scrollY;
+        });
+        
+        // --- Search Logic ---
+        const searchInput = document.getElementById("homeSearchInput");
+        const resultsDiv = document.getElementById("searchResults");
+        searchInput.addEventListener("input", function () {
+            const query = this.value.trim().toLowerCase();
+            if (!query) { resultsDiv.style.display = "none"; return; }
+            const recipes = JSON.parse(localStorage.getItem("recipes") || "[]");
+            const matches = recipes.filter(r => r.title.toLowerCase().includes(query));
+            resultsDiv.innerHTML = "";
+            if (matches.length > 0) {
+                matches.forEach(r => {
+                    const div = document.createElement("div");
+                    div.textContent = r.title;
+                    div.style.padding = "10px"; div.style.cursor = "pointer";
+                    div.onclick = () => { window.location.href = `Recipes.html?view=${encodeURIComponent(r.title)}`; };
+                    resultsDiv.appendChild(div);
+                });
+            } else {
+                resultsDiv.innerHTML = `<div style="padding:10px; color:#888;">No matches found</div>`;
+            }
+            resultsDiv.style.display = "block";
+        });
+        document.addEventListener("click", (e) => {
+            if (resultsDiv && !e.target.closest('.nav-search-container')) {
+                resultsDiv.style.display = "none";
+            }
+        });
+
+
+        // --- Meal Planner Logic ---
+        const recipeList = document.getElementById('recipe-list');
+        const weeklyPlan = document.getElementById('weekly-plan');
+        const clearPlanBtn = document.getElementById('clearPlanBtn');
+        const autoPlanBtn = document.getElementById('autoPlanBtn');
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const meals = ['Breakfast', 'Lunch', 'Dinner'];
+        let allRecipes = [];
+
+        function initializePlanner() {
+            allRecipes = JSON.parse(localStorage.getItem("recipes") || "[]");
+            
+            recipeList.innerHTML = '';
+            if (allRecipes.length > 0) {
+                allRecipes.forEach(recipe => {
+                    const recipeEl = document.createElement('div');
+                    recipeEl.className = 'draggable-recipe';
+                    recipeEl.setAttribute('draggable', true);
+                    recipeEl.dataset.recipeTitle = recipe.title;
+                    const placeholderImg = `https://placehold.co/50x50/FFE0B2/333333?text=${encodeURIComponent(recipe.title.charAt(0))}`;
+                    recipeEl.innerHTML = `
+                        <img src="${recipe.image || placeholderImg}" alt="${recipe.title}" onerror="this.src='${placeholderImg}'">
+                        <h5>${recipe.title}</h5>
+                    `;
+                    recipeList.appendChild(recipeEl);
+                });
+            } else {
+                recipeList.innerHTML = '<p style="text-align:center; color:#888;">No recipes found. Please add some recipes first!</p>';
+            }
+
+            weeklyPlan.innerHTML = '';
+            days.forEach(day => {
+                const dayColumn = document.createElement('div');
+                dayColumn.className = 'day-column';
+                let mealSlotsHTML = `<h4>${day}</h4>`;
+                meals.forEach(meal => {
+                    mealSlotsHTML += `
+                        <div class="meal-slot" data-day="${day}" data-meal="${meal}">
+                           <h5>${meal}</h5>
+                        </div>`;
+                });
+                dayColumn.innerHTML = mealSlotsHTML;
+                weeklyPlan.appendChild(dayColumn);
+            });
+            
+            loadPlan();
+            addEventListeners();
+        }
+        
+        function savePlan() {
+            const plan = {};
+            document.querySelectorAll('.meal-slot').forEach(slot => {
+                const day = slot.dataset.day;
+                const meal = slot.dataset.meal;
+                const mealCard = slot.querySelector('.meal-card');
+                if (mealCard) {
+                    if (!plan[day]) plan[day] = {};
+                    plan[day][meal] = mealCard.dataset.recipeTitle;
+                }
+            });
+            localStorage.setItem('mealPlan', JSON.stringify(plan));
+        }
+        
+        function loadPlan() {
+            const plan = JSON.parse(localStorage.getItem('mealPlan') || '{}');
+            for (const day in plan) {
+                for (const meal in plan[day]) {
+                    const recipeTitle = plan[day][meal];
+                    const recipe = allRecipes.find(r => r.title === recipeTitle);
+                    if (recipe) {
+                        const slot = document.querySelector(`.meal-slot[data-day="${day}"][data-meal="${meal}"]`);
+                        if (slot) {
+                           addRecipeToSlot(slot, recipe);
+                        }
+                    }
+                }
+            }
+        }
+        
+        function addRecipeToSlot(slot, recipe) {
+            slot.innerHTML = `<h5>${slot.dataset.meal}</h5>`;
+            const mealCard = document.createElement('div');
+            mealCard.className = 'meal-card';
+            mealCard.dataset.recipeTitle = recipe.title;
+            mealCard.innerHTML = `
+                ${recipe.title}
+                <button class="remove-meal">&times;</button>
+            `;
+            slot.appendChild(mealCard);
+        }
+
+        function autoPlanWeek() {
+            if (!confirm('This will overwrite your current meal plan. Are you sure?')) {
+                return;
+            }
+
+            if (allRecipes.length < 3) {
+                alert('You need at least 3 recipes to auto-plan the week effectively.');
+                return;
+            }
+
+            const breakfastRecipes = allRecipes.filter(r => r.category && r.category.toLowerCase() === 'breakfast');
+            const mainCourseRecipes = allRecipes.filter(r => r.category && ['main course', 'soup'].includes(r.category.toLowerCase()));
+            
+            if (breakfastRecipes.length === 0) breakfastRecipes.push(...allRecipes);
+            if (mainCourseRecipes.length === 0) mainCourseRecipes.push(...allRecipes.filter(r => !breakfastRecipes.includes(r)), ...allRecipes);
+            
+            const shuffle = (array) => array.sort(() => 0.5 - Math.random());
+            shuffle(breakfastRecipes);
+            shuffle(mainCourseRecipes);
+
+            let breakfastIndex = 0;
+            let lunchIndex = 0;
+            let dinnerIndex = 0;
+
+            days.forEach(day => {
+                // Assign Breakfast
+                const breakfastSlot = document.querySelector(`.meal-slot[data-day="${day}"][data-meal="Breakfast"]`);
+                const breakfastRecipe = breakfastRecipes[breakfastIndex % breakfastRecipes.length];
+                addRecipeToSlot(breakfastSlot, breakfastRecipe);
+                breakfastIndex++;
+
+                // Assign Lunch
+                const lunchSlot = document.querySelector(`.meal-slot[data-day="${day}"][data-meal="Lunch"]`);
+                const lunchRecipe = mainCourseRecipes[lunchIndex % mainCourseRecipes.length];
+                addRecipeToSlot(lunchSlot, lunchRecipe);
+                lunchIndex++;
+                
+                // Assign Dinner, try to make it different from lunch
+                const dinnerSlot = document.querySelector(`.meal-slot[data-day="${day}"][data-meal="Dinner"]`);
+                if (mainCourseRecipes.length > 1 && (dinnerIndex % mainCourseRecipes.length) === ((lunchIndex - 1) % mainCourseRecipes.length)) {
+                    dinnerIndex++;
+                }
+                const dinnerRecipe = mainCourseRecipes[dinnerIndex % mainCourseRecipes.length];
+                addRecipeToSlot(dinnerSlot, dinnerRecipe);
+                dinnerIndex++;
+            });
+
+            savePlan();
+        }
+
+        function addEventListeners() {
+            document.querySelectorAll('.draggable-recipe').forEach(recipe => {
+                recipe.addEventListener('dragstart', (e) => {
+                    e.target.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', e.target.dataset.recipeTitle);
+                });
+                recipe.addEventListener('dragend', (e) => e.target.classList.remove('dragging'));
+            });
+
+            document.querySelectorAll('.meal-slot').forEach(slot => {
+                slot.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.add('drag-over');
+                });
+                 slot.addEventListener('dragleave', (e) => e.currentTarget.classList.remove('drag-over'));
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    e.currentTarget.classList.remove('drag-over');
+                    const recipeTitle = e.dataTransfer.getData('text/plain');
+                    const recipe = allRecipes.find(r => r.title === recipeTitle);
+                    if (recipe) {
+                        addRecipeToSlot(e.currentTarget, recipe);
+                        savePlan();
+                    }
+                });
+            });
+
+            weeklyPlan.addEventListener('click', (e) => {
+                if (e.target.classList.contains('remove-meal')) {
+                    const slot = e.target.closest('.meal-slot');
+                    slot.innerHTML = `<h5>${slot.dataset.meal}</h5>`;
+                    savePlan();
+                }
+            });
+            
+            clearPlanBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to clear the entire meal plan?')) {
+                    localStorage.removeItem('mealPlan');
+                    initializePlanner();
+                }
+            });
+            
+            autoPlanBtn.addEventListener('click', autoPlanWeek);
+        }
+        
+        initializePlanner();
+      });
+    </script>
+  </body>
+</html>
+
